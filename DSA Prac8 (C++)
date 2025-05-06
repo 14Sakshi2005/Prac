@@ -1,0 +1,64 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+
+using namespace std;
+
+// Function to construct the optimal binary search tree
+void optimalBST(const vector<int>& keys, const vector<double>& probabilities) {
+    int n = keys.size();
+    
+    // Create a table to store the minimum cost of the BST
+    vector<vector<double>> cost(n, vector<double>(n, 0));
+    
+    // Create a table to store the root of the BST
+    vector<vector<int>> root(n, vector<int>(n, 0));
+    
+    // Fill the cost table
+    for (int len = 1; len <= n; len++) { // len is the length of the subarray
+        for (int i = 0; i <= n - len; i++) {
+            int j = i + len - 1; // j is the end index of the subarray
+            cost[i][j] = numeric_limits<double>::max(); // Initialize cost to a large value
+            
+            // Calculate the sum of probabilities for keys[i] to keys[j]
+            double sum = 0;
+            for (int k = i; k <= j; k++) {
+                sum += probabilities[k];
+            }
+            
+            // Try making each key in the range keys[i] to keys[j] the root
+            for (int r = i; r <= j; r++) {
+                double c = (r > i ? cost[i][r - 1] : 0) + 
+                           (r < j ? cost[r + 1][j] : 0) + 
+                           sum; // Total cost
+                if (c < cost[i][j]) {
+                    cost[i][j] = c; // Update minimum cost
+                    root[i][j] = r; // Store the root
+                }
+            }
+        }
+    }
+    
+    // Print the minimum cost
+    cout << "Minimum cost of the optimal binary search tree: " << cost[0][n - 1] << endl;
+    
+    // Function to print the structure of the optimal BST
+    cout << "Structure of the optimal binary search tree (root indices):" << endl;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << root[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+// Main function
+int main() {
+    // Example keys and their corresponding probabilities
+    vector<int> keys = {10, 20, 30, 40, 50};
+    vector<double> probabilities = {0.1, 0.2, 0.3, 0.2, 0.2};
+    
+    optimalBST(keys, probabilities);
+    
+    return 0;
+}
