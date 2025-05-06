@@ -1,135 +1,93 @@
-class DictionaryChaining:
-    def __init__(self, size=10, replacement=False):
-        """
-        Initialize the dictionary.
-        :param size: Number of buckets in the hash table
-        :param replacement: If True, implement chaining with replacement
-                            If False, implement chaining without replacement
-        """
+class HashTable:
+    def __init__(self, size):
         self.size = size
-        self.replacement = replacement
-        self.table = [[] for _ in range(self.size)]  # list of lists for chaining
+        self.table = [[] for _ in range(size)]
 
     def hash_function(self, key):
-        return hash(key) % self.size
+        return key % self.size
 
     def insert(self, key, value):
         index = self.hash_function(key)
-        bucket = self.table[index]
-
-        if self.replacement:
-            # With replacement:
-            # If bucket empty, just append
-            if not bucket:
-                bucket.append([key, value])
+        chain = self.table[index]
+        for i, (k, v) in enumerate(chain):
+            if k == key:
+                chain[i] = (key, value)
                 return
+        chain.insert(0, (key, value))
 
-            # If key already exists in bucket, update and return
-            for entry in bucket:
-                if entry[0] == key:
-                    entry[1] = value
-                    return
-
-            # Otherwise, replace first entry with new key,value,
-            # then reinsert displaced key,value pair
-            displaced_entry = bucket[0]
-            bucket[0] = [key, value]
-
-            # Reinsert displaced key/value into proper bucket (recursive insert with replacement off to avoid infinite loop)
-            self._insert_without_replacement(displaced_entry[0], displaced_entry[1], replace_displaced=False)
-        else:
-            # Without replacement - usual chaining append or update if key exists
-            for entry in bucket:
-                if entry[0] == key:
-                    entry[1] = value
-                    return
-            bucket.append([key, value])
-
-    def _insert_without_replacement(self, key, value, replace_displaced=True):
-        """
-        Auxiliary insert used for reinserting displaced entries during 'with replacement' insertion.
-        By default, no replacement here (to prevent infinite recursion).
-        """
+    def search(self, key):
         index = self.hash_function(key)
-        bucket = self.table[index]
-
-        # If replacement is requested and True, use with replacement logic
-        if replace_displaced and self.replacement:
-            if not bucket:
-                bucket.append([key, value])
-                return
-
-            for entry in bucket:
-                if entry[0] == key:
-                    entry[1] = value
-                    return
-
-            displaced_entry = bucket[0]
-            bucket[0] = [key, value]
-            self._insert_without_replacement(displaced_entry[0], displaced_entry[1], replace_displaced=False)
-        else:
-            # Insert without replacement
-            for entry in bucket:
-                if entry[0] == key:
-                    entry[1] = value
-                    return
-            bucket.append([key, value])
-
-    def find(self, key):
-        index = self.hash_function(key)
-        bucket = self.table[index]
-        for entry in bucket:
-            if entry[0] == key:
-                return entry[1]
+        chain = self.table[index]
+        for k, v in chain:
+            if k == key:
+                return v
         return None
 
     def delete(self, key):
         index = self.hash_function(key)
-        bucket = self.table[index]
-        for i, entry in enumerate(bucket):
-            if entry[0] == key:
-                bucket.pop(i)
+        chain = self.table[index]
+        for i, (k, v) in enumerate(chain):
+            if k == key:
+                del chain[i]
                 return True
         return False
 
     def display(self):
-        print("Dictionary state:")
-        for i, bucket in enumerate(self.table):
-            print(f"Bucket {i}:", end=" ")
-            if bucket:
-                print(", ".join(f"({k}: {v})" for k, v in bucket))
+        for i, chain in enumerate(self.table):
+            print(f"Bucket {i}: {chain}")
+
+
+def display_menu():
+    print("\nMenu:")
+    print("1. Insert key-value pair")
+    print("2. Search for a key")
+    print("3. Delete a key")
+    print("4. Display the hash table")
+    print("5. Exit")
+
+
+def user_input():
+    size = int(input("Enter the size of the hash table: "))
+    ht = HashTable(size)
+
+    while True:
+        display_menu()
+        choice = input("Enter your choice (1/2/3/4/5): ")
+
+        if choice == '1':
+            key = int(input("Enter key to insert: "))
+            value = input("Enter the value to insert: ")
+            ht.insert(key, value)
+            print(f"Inserted ({key}, {value}) into the hash table.")
+
+        elif choice == '2':
+            key = int(input("Enter the key to search for: "))
+            result = ht.search(key)
+            if result is not None:
+                print(f"Value for key {key}: {result}")
             else:
-                print("Empty")
-        print()
+                print(f"Key {key} not found.")
 
-# Example Usage
+        elif choice == '3':
+            key = int(input("Enter the key to delete: "))
+            if ht.delete(key):
+                print(f"Key {key} deleted.")
+            else:
+                print(f"Key {key} not found.")
 
-if __name__ == "__main__":
-    print("Dictionary without replacement:")
-    dict_no_replace = DictionaryChaining(size=5, replacement=False)
-    dict_no_replace.insert("apple", 100)
-    dict_no_replace.insert("banana", 200)
-    dict_no_replace.insert("pear", 300)
-    dict_no_replace.insert("grape", 400)
-    dict_no_replace.insert("orange", 500)
-    dict_no_replace.display()
+        elif choice == '4':
+            print("\nHash Table Content:")
+            ht.display()
 
-    print("Find 'banana':", dict_no_replace.find("banana"))
-    print("Delete 'pear':", dict_no_replace.delete("pear"))
-    print("Find 'pear' after deletion:", dict_no_replace.find("pear"))
-    dict_no_replace.display()
+        elif choice == '5':
+            print("Exiting the program.")
+            break
 
-    print("Dictionary with replacement:")
-    dict_with_replace = DictionaryChaining(size=5, replacement=True)
-    dict_with_replace.insert("apple", 100)
-    dict_with_replace.insert("banana", 200)
-    dict_with_replace.insert("pear", 300)
-    dict_with_replace.insert("grape", 400)
-    dict_with_replace.insert("orange", 500)
-    dict_with_replace.display()
+        else:
+            print("Invalid choice! Enter a valid option (1/2/3/4/5)")
 
-    print("Find 'banana':", dict_with_replace.find("banana"))
-    print("Delete 'pear':", dict_with_replace.delete("pear"))
-    print("Find 'pear' after deletion:", dict_with_replace.find("pear"))
-    dict_with_replace.display()
+
+# Run the program
+user_input()
+
 
