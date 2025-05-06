@@ -1,0 +1,26 @@
+            index = (index + 1) % self.size
+        return None, comparisons
+def compare_hash_tables(names, phone_numbers, search_names):
+    # Create hash tables
+    chaining_table = HashTableChaining(size=10)
+    open_addressing_table = HashTableOpenAddressing(size=10)
+    # Insert data into both tables
+    for name, phone_number in zip(names, phone_numbers):
+        chaining_table.insert(name, phone_number)
+        open_addressing_table.insert(name, phone_number)
+    # Search for numbers and count comparisons
+    chaining_comparisons = 0
+    open_addressing_comparisons = 0
+    for name in search_names:
+        _, comparisons = chaining_table.search(name)
+        chaining_comparisons += comparisons
+        _, comparisons = open_addressing_table.search(name)
+        open_addressing_comparisons += comparisons
+    return chaining_comparisons, open_addressing_comparisons
+# Example usage
+names = ["Alice", "Bob", "Charlie", "David", "Eve"]
+phone_numbers = ["123-456", "234-567", "345-678", "456-789", "567-890"]
+search_names = ["Alice", "Bob", "Charlie", "David", "Eve", "Frank"]
+chaining_comparisons, open_addressing_comparisons = compare_hash_tables(names, phone_numbers, search_names)
+print(f"Total comparisons in Chaining: {chaining_comparisons}")
+print(f"Total comparisons in Open Addressing: {open_addressing_comparisons}")
