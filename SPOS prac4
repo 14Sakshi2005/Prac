@@ -79,7 +79,7 @@ def findavgTime(processes, n):
     print("Average Turnaround Time = %.2f" % (total_tat / n))
 
 
-# --------------------- DRIVER CODE ---------------------
+# DRIVER CODE 
 if __name__ == "__main__":
     # Process ID, Burst Time, Arrival Time
     processes = [
